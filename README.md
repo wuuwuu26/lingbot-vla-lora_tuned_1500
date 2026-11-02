@@ -60,8 +60,8 @@ huggingface-cli download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkp
 下载后 `checkpoint/` 目录即包含 `config.json`、`model.safetensors.index.json`、
 tokenizer 文件与三个权重分片，可直接作为 `MODEL_PATH` 传给 `code/eval.sh`。
 
-> **状态**：权重上传进行中。在全部三个分片出现于上述 HF 仓库之前，下载只会得到配置文件。
-> 上传完成后本节会注明。若 HF 不可达，也可基于
+> **状态**：权重分片尚在上传中。在三个分片全部出现于上述 HF 仓库之前，下载只会得到配置文件。
+> 若 HF 不可达，也可基于
 > [`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
 > 与 [`code/configs/lingbotvla_cli.lora1500.yaml`](code/configs/lingbotvla_cli.lora1500.yaml)
 > 按 [`docs/reproduction_report.md`](docs/reproduction_report.md) 自行复现。
