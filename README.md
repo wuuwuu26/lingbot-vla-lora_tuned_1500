@@ -44,7 +44,8 @@ RoboTwin 2.0（Cobot Magic）机器人操作基准上，对 **LingBot-VLA 2.0（
 
 ## 模型权重
 
-权重文件（约 12 GB，3 个分片）体积超过 GitHub 单文件限制，通过 **Release 附件**分发：
+权重文件（约 12 GB，3 个分片）体积超过 GitHub 单文件限制，发布在 Hugging Face：
+**`Dwyane/lingbot-vla-lora_tuned_1500`**
 
 | 文件 | 大小 |
 |---|---:|
@@ -52,18 +53,18 @@ RoboTwin 2.0（Cobot Magic）机器人操作基准上，对 **LingBot-VLA 2.0（
 | `model-00002-of-00003.safetensors` | 5.0 GB |
 | `model-00003-of-00003.safetensors` | 4.6 GB |
 
-使用方式：把三个分片下载到本仓库 `checkpoint/` 目录，与该目录中已有的
-`config.json`、`model.safetensors.index.json`、tokenizer 文件放在一起，即可得到完整的 checkpoint 目录。
-
 ```bash
-# 以 Releases 页面上的实际链接为准
-base=<release-download-url>/checkpoint
-for f in model-00001-of-00003.safetensors model-00002-of-00003.safetensors model-00003-of-00003.safetensors; do
-  curl -L -O "$base/$f"
-done
+huggingface-cli download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkpoint
 ```
 
-完整性可用 `sha256sum` 与 Release 页面中记录的校验值比对。
+下载后 `checkpoint/` 目录即包含 `config.json`、`model.safetensors.index.json`、
+tokenizer 文件与三个权重分片，可直接作为 `MODEL_PATH` 传给 `code/eval.sh`。
+
+> **状态**：权重上传进行中。在全部三个分片出现于上述 HF 仓库之前，下载只会得到配置文件。
+> 上传完成后本节会注明。若 HF 不可达，也可基于
+> [`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
+> 与 [`code/configs/lingbotvla_cli.lora1500.yaml`](code/configs/lingbotvla_cli.lora1500.yaml)
+> 按 [`docs/reproduction_report.md`](docs/reproduction_report.md) 自行复现。
 
 ## 快速开始
 
