@@ -91,7 +91,7 @@ re-evaluation takes precedence). Per-task details are in
 ## Model weights
 
 The weights (~12 GB across 3 shards) exceed GitHub's file size limit and are published on
-Hugging Face: **`Dwyane/lingbot-vla-robotwin-weights`**
+Hugging Face: **`Dwyane/lingbot-vla-lora_tuned_1500`**
 
 | File | Size |
 |---|---:|
@@ -100,7 +100,7 @@ Hugging Face: **`Dwyane/lingbot-vla-robotwin-weights`**
 | `model-00003-of-00003.safetensors` | 4.6 GB |
 
 ```bash
-hf download Dwyane/lingbot-vla-robotwin-weights --local-dir ./checkpoint
+hf download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkpoint
 ```
 
 After downloading, `checkpoint/` contains `config.json`, `model.safetensors.index.json`,

@@ -85,7 +85,7 @@
 ## 模型权重
 
 权重文件（约 12 GB，3 个分片）超过 GitHub 单文件限制，发布在 Hugging Face：
-**`Dwyane/lingbot-vla-robotwin-weights`**
+**`Dwyane/lingbot-vla-lora_tuned_1500`**
 
 | 文件 | 大小 |
 |---|---:|
@@ -94,7 +94,7 @@
 | `model-00003-of-00003.safetensors` | 4.6 GB |
 
 ```bash
-hf download Dwyane/lingbot-vla-robotwin-weights --local-dir ./checkpoint
+hf download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkpoint
 ```
 
 下载后 `checkpoint/` 目录即包含 `config.json`、`model.safetensors.index.json`、
