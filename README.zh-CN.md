@@ -10,12 +10,50 @@
 
 > English version: [`README.md`](README.md)
 
+## 训练演进过程
+
+最终提交的模型是四个阶段中的最后一站，而不是一次训练的结果。所有阶段使用相同的数据、
+环境与合规约束，变化的是训练配方。
+
+| 阶段 | 是什么 | devset | 全量评测 |
+|---|---|---:|---|
+| **1. 全参数 SFT 11000 步**（`hf_final_11000`） | 官方 RoboTwin 配方，未改任何超参，训练 50 个 clean 任务 | — | clean **48.55%**（670/1380），randomized **24.00%**（180/750） |
+| **2. 续训至 6000 步**（`lora6000_base`） | 同一配方，lr 1e-4 | 27/50 = 54.0% | — |
+| **3. 在该基座上 LoRA 1500 步**（`lora_tuned_1500`） | LoRA rank 64 / alpha 128，作用于 `action_expert`，lr 5e-5 | **31/50 = 62.0%** | clean **62.8%**（314/500），randomized **37.0%**（185/500） |
+| 4. 未采用的备选 | v3：batch 8→16、lr 5e-5→7e-5、前 25 步监督 + 时序平滑 · v2：视觉噪声 0.02 / 状态扰动 0.01 | 29/50 = 58.0%<br>23/41 ≈ 56% | — |
+
+关于阶段 1 的几个要点，后续各阶段都建立在其之上：
+
+- 严格按官方 `train_full_sft.sh` launcher 执行，**未做任何超参调优**，只从外部设定运行规模
+  （8 卡、`max_steps=11000`、`save_steps=1000`）。
+- 实测训练速度 19.3–22.1 s/it（8 × W7900D），11000 步约需 59–68 小时。
+- 为在本平台跑通，只做了基础设施层面的改动（checkpoint 轮转、续训开关、两个环境变量），
+  均不影响训练数值。
+- 它的全量评测成绩低于阶段 3，原因是步数更少且未做调优；正是
+  [`docs/reproduction_report.md`](docs/reproduction_report.md) 中的 devset 对比，才确定了
+  改用 LoRA 微调这一方向。
+
+详细报告：[`docs/reproduction_report_hf11000_history.md`](docs/reproduction_report_hf11000_history.md)
+（阶段 1，含环境适配与评测口径分析）与 [`docs/reproduction_report.md`](docs/reproduction_report.md)
+（阶段 2–4）。
+
 ## 结果
+
+最终提交模型（`lora_tuned_1500`）：
 
 | setting | 任务数 | 成绩 | 成功率 |
 |---|---:|---:|---:|
 | clean2clean（seen） | 50 / 50 | **314 / 500** | **62.8%** |
 | clean2random（unseen） | 50 / 50 | **185 / 500** | **37.0%** |
+
+早期全参数 SFT 模型（`hf_final_11000`）：
+
+| setting | 任务数 | 成绩 | 成功率 |
+|---|---:|---:|---:|
+| clean2clean（seen） | 50 / 50 | 670 / 1380 | 48.55% |
+| clean2random（unseen） | 50 / 50 | 180 / 750 | 24.00% |
+
+两次评测的每任务集数不同（明细见报告）；最终模型为每任务 10 集。
 
 每任务 10 集（赛题允许未测满 100 次如实上报，最终以官方复测为准）。
 逐任务明细见 [`results/results.json`](results/results.json)，
@@ -40,8 +78,8 @@
 │   └── tokenizer / preprocessor 配置
 ├── results/             评测结果（results.json + 评测报告）
 └── docs/                复现与调优说明
-    ├── reproduction_report.md                 最终提交的 lora_tuned_1500
-    └── reproduction_report_hf11000_history.md 早期全参数 SFT 版本
+    ├── reproduction_report.md                 阶段 2–4（LoRA 调优）
+    └── reproduction_report_hf11000_history.md 阶段 1（11000 步全参数 SFT）
 ```
 
 ## 模型权重
@@ -75,10 +113,13 @@ tokenizer 文件与三个权重分片，可直接作为 `MODEL_PATH` 传给 `cod
 [`code/README.md`](code/README.md)。
 
 ```bash
-# 训练（全参数 SFT 入口；最终提交使用 LoRA 配置，见 docs/reproduction_report.md）
+# 阶段 1：11000 步全参数 SFT（官方配方，仅设定运行规模）
 GPU_COUNT=8 MAX_STEPS=11000 SAVE_STEPS=1000 \
 OUTPUT_DIR=/workspace/runtime/outputs/full_sft_11k_8gpu \
 bash code/train.sh
+
+# 阶段 2–3：LoRA 微调（见 docs/reproduction_report.md）；
+# 使用官方 launcher 并读取 code/configs/lingbotvla_cli.lora1500.yaml
 
 # 评测
 MODEL_PATH=<checkpoint-dir> GPU_COUNT=8 EPISODES=100 TASK_CONFIG=both bash code/eval.sh
@@ -91,7 +132,7 @@ MODEL_PATH=<checkpoint-dir> GPU_COUNT=8 EPISODES=100 TASK_CONFIG=both bash code/
 | [`README.md`](README.md) | 英文版说明 |
 | [`code/README.md`](code/README.md) | 环境依赖、两个必设环境变量、训练/评测入口、对官方代码的修改与归属说明 |
 | [`docs/reproduction_report.md`](docs/reproduction_report.md) | 最终提交权重的训练超参、评测配置、四版权重 devset 对比、口径与已知限制 |
-| [`docs/reproduction_report_hf11000_history.md`](docs/reproduction_report_hf11000_history.md) | 早期 11000 步全参数 SFT 版本的复现细节 |
+| [`docs/reproduction_report_hf11000_history.md`](docs/reproduction_report_hf11000_history.md) | 阶段 1：11000 步全参数 SFT —— 训练配方、实测速度、环境适配、评测口径分析、代码改动与归属 |
 | [`results/eval_report_clean_randomized.md`](results/eval_report_clean_randomized.md) | 双 setting 逐任务成绩、分布观察、评测成本 |
 
 ## 合规与改动说明

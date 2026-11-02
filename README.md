@@ -11,12 +11,53 @@ manipulation benchmark, evaluated on all 50 tasks under both `clean` (seen) and
 
 > 中文版说明见 [`README.zh-CN.md`](README.zh-CN.md)。
 
+## Training progression
+
+The submitted model is the last step of a four-stage path, not a single training run.
+All stages share the same data, environment and compliance constraints; what changed is
+the training recipe.
+
+| Stage | What it is | Devset | Full evaluation |
+|---|---|---:|---|
+| **1. Full-parameter SFT, 11000 steps** (`hf_final_11000`) | Official RoboTwin recipe, no hyper-parameter changes, trained on 50 clean tasks | — | clean **48.55%** (670/1380), randomized **24.00%** (180/750) |
+| **2. Continued SFT to 6000 steps** (`lora6000_base`) | Same recipe shortened/continued, lr 1e-4 | 27/50 = 54.0% | — |
+| **3. LoRA 1500 steps on that base** (`lora_tuned_1500`) | LoRA rank 64 / alpha 128 on `action_expert`, lr 5e-5 | **31/50 = 62.0%** | clean **62.8%** (314/500), randomized **37.0%** (185/500) |
+| 4. Alternatives rejected | v3: batch 8→16, lr 5e-5→7e-5, first-25-step supervision + temporal smoothing · v2: vision noise 0.02 / state jitter 0.01 | 29/50 = 58.0%<br>23/41 ≈ 56% | — |
+
+Key points about stage 1, which the later stages build on:
+
+- It follows the official `train_full_sft.sh` launcher verbatim — **no hyper-parameter
+  tuning**, only run scale (8 GPUs, `max_steps=11000`, `save_steps=1000`) is set externally.
+- Measured throughput 19.3–22.1 s/it on 8 × W7900D, i.e. roughly 59–68 hours for 11000 steps.
+- It required only infrastructure-level changes to run on this platform (checkpoint
+  rotation, a resume switch, two environment variables), none of which affects training numerics.
+- Its full-evaluation numbers are lower than stage 3 because it used fewer steps and was
+  not tuned; the devset comparison in [`docs/reproduction_report.md`](docs/reproduction_report.md)
+  is what identified LoRA fine-tuning as the better direction.
+
+Detailed reports: [`docs/reproduction_report_hf11000_history.md`](docs/reproduction_report_hf11000_history.md)
+(stage 1, including environment adaptation and evaluation-methodology analysis) and
+[`docs/reproduction_report.md`](docs/reproduction_report.md) (stages 2–4).
+
+
 ## Results
+
+Final submitted model (`lora_tuned_1500`):
 
 | Setting | Tasks | Score | Success rate |
 |---|---:|---:|---:|
 | clean2clean (seen) | 50 / 50 | **314 / 500** | **62.8%** |
 | clean2random (unseen) | 50 / 50 | **185 / 500** | **37.0%** |
+
+Earlier full-parameter SFT model (`hf_final_11000`):
+
+| Setting | Tasks | Score | Success rate |
+|---|---:|---:|---:|
+| clean2clean (seen) | 50 / 50 | 670 / 1380 | 48.55% |
+| clean2random (unseen) | 50 / 50 | 180 / 750 | 24.00% |
+
+Both were measured with a different episode count per task (see the reports); 10 episodes
+per task for the final model.
 
 10 episodes per task (the rules permit reporting under-measured results; official
 re-evaluation takes precedence). Per-task details are in
@@ -43,8 +84,8 @@ re-evaluation takes precedence). Per-task details are in
 │   └── tokenizer / preprocessor configs
 ├── results/             Evaluation results (results.json + report)
 └── docs/                Reproduction and tuning notes
-    ├── reproduction_report.md                  Final submitted lora_tuned_1500
-    └── reproduction_report_hf11000_history.md  Earlier full-parameter SFT run
+    ├── reproduction_report.md                  Stages 2–4 (LoRA tuning)
+    └── reproduction_report_hf11000_history.md  Stage 1 (11000-step full-parameter SFT)
 ```
 
 ## Model weights
@@ -80,11 +121,13 @@ Environment: 8 × AMD Radeon W7900D 48 GB (ROCm 7.2.1 + PyTorch 2.9.1), dependin
 [`code/README.md`](code/README.md).
 
 ```bash
-# Training (full-parameter SFT entry point; the submitted model uses the LoRA config,
-# see docs/reproduction_report.md)
+# Stage 1: 11000-step full-parameter SFT (the official recipe, run scale only)
 GPU_COUNT=8 MAX_STEPS=11000 SAVE_STEPS=1000 \
 OUTPUT_DIR=/workspace/runtime/outputs/full_sft_11k_8gpu \
 bash code/train.sh
+
+# Stages 2-3: LoRA fine-tuning (see docs/reproduction_report.md);
+# runs through the official launcher with code/configs/lingbotvla_cli.lora1500.yaml
 
 # Evaluation
 MODEL_PATH=<checkpoint-dir> GPU_COUNT=8 EPISODES=100 TASK_CONFIG=both bash code/eval.sh
@@ -97,7 +140,7 @@ MODEL_PATH=<checkpoint-dir> GPU_COUNT=8 EPISODES=100 TASK_CONFIG=both bash code/
 | [`README.zh-CN.md`](README.zh-CN.md) | This README in Chinese |
 | [`code/README.md`](code/README.md) | Environment, required env vars, train/eval entry points, modifications to official code and their ownership |
 | [`docs/reproduction_report.md`](docs/reproduction_report.md) | Training hyper-parameters, evaluation setup, devset comparison of four checkpoints, caveats |
-| [`docs/reproduction_report_hf11000_history.md`](docs/reproduction_report_hf11000_history.md) | Reproduction details for the earlier 11000-step full-parameter SFT run |
+| [`docs/reproduction_report_hf11000_history.md`](docs/reproduction_report_hf11000_history.md) | Stage 1: 11000-step full-parameter SFT — recipe, throughput, environment adaptation, evaluation-methodology analysis, code changes and their ownership |
 | [`results/eval_report_clean_randomized.md`](results/eval_report_clean_randomized.md) | Per-task scores for both settings, distribution observations, evaluation cost |
 
 ## Compliance and modifications
