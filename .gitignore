@@ -1,0 +1,23 @@
+# 模型权重分片不进仓库，通过 GitHub Release 分发（见 README「模型权重」）
+*.safetensors
+
+# 训练/评测产物
+outputs/
+runtime/
+runs/
+trace/
+wandb/
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 编辑器与系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
