@@ -93,11 +93,11 @@ re-evaluation takes precedence). Per-task details are in
 The weights (~12 GB across 3 shards) exceed GitHub's file size limit and are published on
 Hugging Face: **`Dwyane/lingbot-vla-lora_tuned_1500`**
 
-| File | Size |
-|---|---:|
-| `model-00001-of-00003.safetensors` | 2.0 GB |
-| `model-00002-of-00003.safetensors` | 5.0 GB |
-| `model-00003-of-00003.safetensors` | 4.6 GB |
+| File | Size | SHA-256 |
+|---|---:|---|
+| `model-00001-of-00003.safetensors` | 2.0 GB | `7bff0166a4cc6e5f66d2b52b144f863679c81ef890c719e1ced5c499cfe22cc4` |
+| `model-00002-of-00003.safetensors` | 5.0 GB | `2ba12d8f780fa0df533d764e01b0a09528b1901e02c79c23af00ca96c5d89267` |
+| `model-00003-of-00003.safetensors` | 4.6 GB | `495150c7f55d83f65554580179bffa2a33f078ce9d14073f60a57f3ee7957aac` |
 
 ```bash
 hf download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkpoint
@@ -107,9 +107,8 @@ After downloading, `checkpoint/` contains `config.json`, `model.safetensors.inde
 the tokenizer files and the three weight shards, ready to be passed as `MODEL_PATH` to
 `code/eval.sh`.
 
-> **Status**: the weight shards are still being uploaded. Until all three appear in the
-> Hugging Face repository above, downloading returns only the config files. If HF is
-> unreachable, you can reproduce the model from
+> All three shards are uploaded and downloadable from the Hugging Face repository above.
+> If HF is unreachable, you can reproduce the model from
 > [`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b) and
 > [`code/configs/lingbotvla_cli.lora1500.yaml`](code/configs/lingbotvla_cli.lora1500.yaml)
 > following [`docs/reproduction_report.md`](docs/reproduction_report.md).

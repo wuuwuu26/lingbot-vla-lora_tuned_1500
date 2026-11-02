@@ -87,11 +87,11 @@
 权重文件（约 12 GB，3 个分片）超过 GitHub 单文件限制，发布在 Hugging Face：
 **`Dwyane/lingbot-vla-lora_tuned_1500`**
 
-| 文件 | 大小 |
-|---|---:|
-| `model-00001-of-00003.safetensors` | 2.0 GB |
-| `model-00002-of-00003.safetensors` | 5.0 GB |
-| `model-00003-of-00003.safetensors` | 4.6 GB |
+| 文件 | 大小 | SHA-256 |
+|---|---:|---|
+| `model-00001-of-00003.safetensors` | 2.0 GB | `7bff0166a4cc6e5f66d2b52b144f863679c81ef890c719e1ced5c499cfe22cc4` |
+| `model-00002-of-00003.safetensors` | 5.0 GB | `2ba12d8f780fa0df533d764e01b0a09528b1901e02c79c23af00ca96c5d89267` |
+| `model-00003-of-00003.safetensors` | 4.6 GB | `495150c7f55d83f65554580179bffa2a33f078ce9d14073f60a57f3ee7957aac` |
 
 ```bash
 hf download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkpoint
@@ -100,7 +100,7 @@ hf download Dwyane/lingbot-vla-lora_tuned_1500 --local-dir ./checkpoint
 下载后 `checkpoint/` 目录即包含 `config.json`、`model.safetensors.index.json`、
 tokenizer 文件与三个权重分片，可直接作为 `MODEL_PATH` 传给 `code/eval.sh`。
 
-> **状态**：权重分片尚在上传中。在三个分片全部出现于上述 HF 仓库之前，下载只会得到配置文件。
+> 三个分片均已上传，可直接从上述 HF 仓库下载。
 > 若 HF 不可达，也可基于
 > [`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
 > 与 [`code/configs/lingbotvla_cli.lora1500.yaml`](code/configs/lingbotvla_cli.lora1500.yaml)
