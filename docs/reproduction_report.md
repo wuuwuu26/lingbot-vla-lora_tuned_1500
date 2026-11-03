@@ -6,7 +6,6 @@
 
 ## 1. 基础信息
 
-- **团队名称**：
 - **基座模型**：LingBot-VLA 2.0（`robbyant/lingbot-vla-v2-6b`）
 - **提交 checkpoint**：`lora_tuned_1500`
   —— 在 6000 步基座（`lora6000_base`）上做 **LoRA 微调 1500 步**，再把 LoRA 权重 **merge 回基座**导出的 `hf_ckpt_merged`（约 12G，3 个 safetensors 分片 + config/tokenizer）。

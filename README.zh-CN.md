@@ -3,7 +3,6 @@
 在 RoboTwin 2.0（Cobot Magic）机器人操作基准上对 **LingBot-VLA 2.0（6B）** 做 LoRA 微调，
 并在 `clean`（seen）/ `randomized`（unseen）两个 setting 下评测全部 50 个任务。
 
-- **团队**：
 - **基础模型**：[`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
 - **提交 checkpoint**：`lora_tuned_1500`（LoRA rank 64 / alpha 128，训练 1500 步后 merge 回基座）
 - **模型权重**：Hugging Face [`Dwyane/lingbot-vla-lora_tuned_1500`](https://huggingface.co/Dwyane/lingbot-vla-lora_tuned_1500)

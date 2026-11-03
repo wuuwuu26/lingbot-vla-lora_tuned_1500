@@ -2,7 +2,6 @@
 
 ## 1. 基础信息
 
-- **团队名称**：
 - **使用模型版本**：LingBot-VLA 2.0（`robbyant/lingbot-vla-v2-6b`）
 - **代码版本 / Commit**（镜像自带仓库的 HEAD，本方案未切换分支或 commit）：
   - lingbot-vla-v2：`951475ae1b1d87553e7dc47c97b53a3d695c0d13`

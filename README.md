@@ -4,7 +4,6 @@ LoRA fine-tuning of **LingBot-VLA 2.0 (6B)** on the RoboTwin 2.0 (Cobot Magic) r
 manipulation benchmark, evaluated on all 50 tasks under both `clean` (seen) and
 `randomized` (unseen) settings.
 
-- **Team**: 
 - **Base model**: [`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
 - **Submitted checkpoint**: `lora_tuned_1500` (LoRA rank 64 / alpha 128, 1500 steps, merged back into the base)
 - **Model weights**: [`Dwyane/lingbot-vla-lora_tuned_1500`](https://huggingface.co/Dwyane/lingbot-vla-lora_tuned_1500) on Hugging Face
