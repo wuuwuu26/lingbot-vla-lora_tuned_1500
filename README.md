@@ -7,6 +7,7 @@ manipulation benchmark, evaluated on all 50 tasks under both `clean` (seen) and
 - **Team**: 
 - **Base model**: [`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
 - **Submitted checkpoint**: `lora_tuned_1500` (LoRA rank 64 / alpha 128, 1500 steps, merged back into the base)
+- **Model weights**: [`Dwyane/lingbot-vla-lora_tuned_1500`](https://huggingface.co/Dwyane/lingbot-vla-lora_tuned_1500) on Hugging Face
 - **Motion planner used for evaluation**: cuRobo v0.7.8
 
 > 中文版说明见 [`README.zh-CN.md`](README.zh-CN.md)。
@@ -91,7 +92,7 @@ re-evaluation takes precedence). Per-task details are in
 ## Model weights
 
 The weights (~12 GB across 3 shards) exceed GitHub's file size limit and are published on
-Hugging Face: **`Dwyane/lingbot-vla-lora_tuned_1500`**
+Hugging Face: **[`Dwyane/lingbot-vla-lora_tuned_1500`](https://huggingface.co/Dwyane/lingbot-vla-lora_tuned_1500)**
 
 | File | Size | SHA-256 |
 |---|---:|---|

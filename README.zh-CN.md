@@ -6,6 +6,7 @@
 - **团队**：
 - **基础模型**：[`robbyant/lingbot-vla-v2-6b`](https://huggingface.co/robbyant/lingbot-vla-v2-6b)
 - **提交 checkpoint**：`lora_tuned_1500`（LoRA rank 64 / alpha 128，训练 1500 步后 merge 回基座）
+- **模型权重**：Hugging Face [`Dwyane/lingbot-vla-lora_tuned_1500`](https://huggingface.co/Dwyane/lingbot-vla-lora_tuned_1500)
 - **评测规划器**：cuRobo v0.7.8
 
 > English version: [`README.md`](README.md)
@@ -85,7 +86,7 @@
 ## 模型权重
 
 权重文件（约 12 GB，3 个分片）超过 GitHub 单文件限制，发布在 Hugging Face：
-**`Dwyane/lingbot-vla-lora_tuned_1500`**
+**[`Dwyane/lingbot-vla-lora_tuned_1500`](https://huggingface.co/Dwyane/lingbot-vla-lora_tuned_1500)**
 
 | 文件 | 大小 | SHA-256 |
 |---|---:|---|
