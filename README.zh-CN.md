@@ -106,31 +106,37 @@ tokenizer 文件与三个权重分片，可直接作为 `MODEL_PATH` 传给 `cod
 > 与 [`code/configs/lingbotvla_cli.lora1500.yaml`](code/configs/lingbotvla_cli.lora1500.yaml)
 > 按 [`docs/reproduction_report.md`](docs/reproduction_report.md) 自行复现。
 
-## 训练机器
+## 训练与调优所用硬件
 
-所有后训练 / 微调阶段（阶段 1–3，包括最终提交的 `lora_tuned_1500` LoRA 训练）均在同一台机器上完成：
+后训练跨了两台不同的机器：基座模型在 AMD GPU 上训练，产出最终提交模型的调优则在 NVIDIA GPU 上完成。
 
-| 项 | 值 |
-|---|---|
-| GPU | **8 × AMD Radeon W7900D 48 GB**（gfx1100） |
-| 软件栈 | ROCm 7.2.1 + PyTorch 2.9.1+rocm7.2.1 + Triton 3.5.1 + flash-attn 2.8.4（Triton 回退实现，无 `flash_attn_2_cuda` HIP 扩展，需设 `AITER_TRITON_ONLY=1`）+ Python 3.12.3 |
-| 工作区持久卷 | 100 GB（因此必须做 checkpoint 轮转，见 [`code/README.md`](code/README.md)） |
-| 主要依赖 | `lingbot-vla-v2`、`RoboTwin 2.0`、`LeRobot`、`MPLib` |
+| 阶段 | 机器 | 产出 |
+|---|---|---|
+| **基座训练**（全参数 SFT） | **8 × AMD Radeon W7900D 48 GB**（gfx1100），ROCm | `hf_final_11000` 与 `lora6000_base` SFT 权重 |
+| **调优**（LoRA 微调） | **NVIDIA RTX 4090D / RTX 6000D**（CUDA） | `lora_tuned_1500`（最终提交模型）及 devset 各备选版本 |
 
-阶段 1 全参数 SFT 在这 8 × W7900D 上的实测速度为 19.3–22.1 s/it，11000 步约需 59–68 小时。
-为在本机跑通官方配方，只做了基础设施层面的改动（checkpoint 轮转、续训开关、两个环境变量），
-均不影响训练数值。
+**基座训练机器 —— 8 × AMD Radeon W7900D 48 GB（ROCm）：**
 
-> **评测使用的是另一套硬件**，切勿与训练机器混淆：仿真在 NVIDIA RTX 4090D / RTX 6000D
-> （SAPIEN 3.0.0b1 光追渲染 + OIDN 降噪），策略推理在 NVIDIA RTX 6000D（4 个 WebSocket
-> 服务，端口 13400–13403），软件栈 torch 2.7.0+cu128、cuRobo v0.7.8。详见
-> [`docs/reproduction_report.md`](docs/reproduction_report.md)。
+- 软件栈：ROCm 7.2.1 + PyTorch 2.9.1+rocm7.2.1 + Triton 3.5.1 + flash-attn 2.8.4
+  （Triton 回退实现，无 `flash_attn_2_cuda` HIP 扩展，需设 `AITER_TRITON_ONLY=1`）+ Python 3.12.3。
+- 工作区持久卷：100 GB（因此必须做 checkpoint 轮转，见 [`code/README.md`](code/README.md)）。
+- 主要依赖：`lingbot-vla-v2`、`RoboTwin 2.0`、`LeRobot`、`MPLib`。
+- 实测速度：19.3–22.1 s/it，11000 步约需 59–68 小时。为在本机跑通官方配方，只做了基础设施层面的
+  改动（checkpoint 轮转、续训开关、两个环境变量），均不影响训练数值。
+
+**调优机器 —— NVIDIA RTX 4090D / RTX 6000D（CUDA）**：与评测所用同一类硬件。
+
+- LoRA rank 64 / alpha 128，作用于 `action_expert`，lr 5e-5，1500 步（见
+  [`docs/reproduction_report.md`](docs/reproduction_report.md)）。
+- 评测（在同一套硬件上进行）：仿真在 NVIDIA RTX 4090D / RTX 6000D（SAPIEN 3.0.0b1 光追渲染 +
+  OIDN 降噪），策略推理在 NVIDIA RTX 6000D（4 个 WebSocket 服务，端口 13400–13403），
+  torch 2.7.0+cu128、cuRobo v0.7.8。详见 [`docs/reproduction_report.md`](docs/reproduction_report.md)。
 
 ## 快速开始
 
-环境：8 × AMD Radeon W7900D 48 GB（ROCm 7.2.1 + PyTorch 2.9.1），依赖
-`lingbot-vla-v2`、`RoboTwin 2.0`、`LeRobot`、`MPLib`。详见
-[`code/README.md`](code/README.md) 及上文「训练机器」一节。
+环境：基座训练在 8 × AMD Radeon W7900D 48 GB（ROCm 7.2.1 + PyTorch 2.9.1），调优与评测在
+NVIDIA RTX 4090D / RTX 6000D，依赖 `lingbot-vla-v2`、`RoboTwin 2.0`、`LeRobot`、`MPLib`。
+详见 [`code/README.md`](code/README.md) 及上文「训练与调优所用硬件」一节。
 
 ```bash
 # 阶段 1：11000 步全参数 SFT（官方配方，仅设定运行规模）

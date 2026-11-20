@@ -113,34 +113,45 @@ the tokenizer files and the three weight shards, ready to be passed as `MODEL_PA
 > [`code/configs/lingbotvla_cli.lora1500.yaml`](code/configs/lingbotvla_cli.lora1500.yaml)
 > following [`docs/reproduction_report.md`](docs/reproduction_report.md).
 
-## Training machine
+## Training and tuning hardware
 
-All post-training / fine-tuning stages (stages 1–3, including the submitted
-`lora_tuned_1500` LoRA run) were performed on the following machine:
+Post-training spanned two different machines: the base model was trained on AMD GPUs,
+while the tuning that produced the submitted model was done on NVIDIA GPUs.
 
-| Item | Value |
-|---|---|
-| GPUs | **8 × AMD Radeon W7900D 48 GB** (gfx1100) |
-| Software stack | ROCm 7.2.1 + PyTorch 2.9.1+rocm7.2.1 + Triton 3.5.1 + flash-attn 2.8.4 (Triton fallback; no `flash_attn_2_cuda` HIP extension, so `AITER_TRITON_ONLY=1` is required) + Python 3.12.3 |
-| Workspace persistent volume | 100 GB (checkpoint rotation was required; see [`code/README.md`](code/README.md)) |
-| Dependencies | `lingbot-vla-v2`, `RoboTwin 2.0`, `LeRobot`, `MPLib` |
+| Phase | Machine | What it produced |
+|---|---|---|
+| **Base training** (full-parameter SFT) | **8 × AMD Radeon W7900D 48 GB** (gfx1100), ROCm | `hf_final_11000` and the `lora6000_base` SFT weights |
+| **Tuning** (LoRA fine-tuning) | **NVIDIA RTX 4090D / RTX 6000D** (CUDA) | `lora_tuned_1500` (the submitted checkpoint) and the devset alternatives |
 
-Measured throughput of the stage-1 full-parameter SFT on these 8 × W7900D was
-19.3–22.1 s/it, i.e. roughly 59–68 hours for 11000 steps. Only infrastructure-level
-changes (checkpoint rotation, a resume switch, two environment variables) were needed
-to run the official recipe on this machine; none affects training numerics.
+**Base-training machine — 8 × AMD Radeon W7900D 48 GB (ROCm):**
 
-> **Evaluation was run on different hardware** and must not be confused with the
-> training machine: simulation on NVIDIA RTX 4090D / RTX 6000D (SAPIEN 3.0.0b1 ray
-> tracing + OIDN denoising), policy inference on NVIDIA RTX 6000D (4 WebSocket servers,
-> ports 13400–13403), with torch 2.7.0+cu128 and cuRobo v0.7.8. Details in
-> [`docs/reproduction_report.md`](docs/reproduction_report.md).
+- Software stack: ROCm 7.2.1 + PyTorch 2.9.1+rocm7.2.1 + Triton 3.5.1 + flash-attn 2.8.4
+  (Triton fallback; no `flash_attn_2_cuda` HIP extension, so `AITER_TRITON_ONLY=1` is
+  required) + Python 3.12.3.
+- Workspace persistent volume: 100 GB (checkpoint rotation was required; see
+  [`code/README.md`](code/README.md)).
+- Dependencies: `lingbot-vla-v2`, `RoboTwin 2.0`, `LeRobot`, `MPLib`.
+- Measured throughput: 19.3–22.1 s/it, i.e. roughly 59–68 hours for 11000 steps. Only
+  infrastructure-level changes (checkpoint rotation, a resume switch, two environment
+  variables) were needed to run the official recipe on this machine; none affects
+  training numerics.
+
+**Tuning machine — NVIDIA RTX 4090D / RTX 6000D (CUDA):** the same class of GPUs used
+for evaluation.
+
+- LoRA rank 64 / alpha 128 on `action_expert`, lr 5e-5, 1500 steps (see
+  [`docs/reproduction_report.md`](docs/reproduction_report.md)).
+- Evaluation (on the same hardware): simulation on NVIDIA RTX 4090D / RTX 6000D
+  (SAPIEN 3.0.0b1 ray tracing + OIDN denoising), policy inference on NVIDIA RTX 6000D
+  (4 WebSocket servers, ports 13400–13403), torch 2.7.0+cu128 and cuRobo v0.7.8.
+  Details in [`docs/reproduction_report.md`](docs/reproduction_report.md).
 
 ## Quick start
 
-Environment: 8 × AMD Radeon W7900D 48 GB (ROCm 7.2.1 + PyTorch 2.9.1), depending on
+Environment: base training on 8 × AMD Radeon W7900D 48 GB (ROCm 7.2.1 + PyTorch
+2.9.1), tuning and evaluation on NVIDIA RTX 4090D / RTX 6000D; depending on
 `lingbot-vla-v2`, `RoboTwin 2.0`, `LeRobot` and `MPLib`. See
-[`code/README.md`](code/README.md) and the "Training machine" section above.
+[`code/README.md`](code/README.md) and the "Training and tuning hardware" section above.
 
 ```bash
 # Stage 1: 11000-step full-parameter SFT (the official recipe, run scale only)
