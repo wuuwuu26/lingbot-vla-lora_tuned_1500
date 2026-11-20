@@ -24,6 +24,12 @@ the training recipe.
 | **3. LoRA 1500 steps on that base** (`lora_tuned_1500`) | LoRA rank 64 / alpha 128 on `action_expert`, lr 5e-5 | **31/50 = 62.0%** | clean **62.8%** (314/500), randomized **37.0%** (185/500) |
 | 4. Alternatives rejected | v3: batch 8→16, lr 5e-5→7e-5, first-25-step supervision + temporal smoothing · v2: vision noise 0.02 / state jitter 0.01 | 29/50 = 58.0%<br>23/41 ≈ 56% | — |
 
+> **On the name `lora6000_base`:** despite "lora" in the name, this checkpoint was produced by
+> **continued full-parameter SFT** (from step 3000 to 6000, lr 1e-4), *not* LoRA. The "lora"
+> prefix means this model is the **base onto which the later LoRA fine-tuning is applied**
+> (stage 3, `lora_tuned_1500`). Hence the "SFT" label in the table is accurate; the name is
+> just a naming artifact.
+
 Key points about stage 1, which the later stages build on:
 
 - It follows the official `train_full_sft.sh` launcher verbatim — **no hyper-parameter
